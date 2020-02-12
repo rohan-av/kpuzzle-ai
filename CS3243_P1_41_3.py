@@ -1,19 +1,41 @@
 import os
 import sys
+import math
+from time import time # assumes Unix-based system; switch to clock if on Windows
 
+class Node(object):
+    def __init__(self, orientation):
+        self.state = orientation # a list of lists corresponding to the orientation of the tiles
+        self.depth = 0
+    
+    # compare function to check whether two States have the same orientation of tiles
+    def compare(self, other):
+        return self.state == other.state
 
 class Puzzle(object):
     def __init__(self, init_state, goal_state):
         # you may add more attributes if you think is useful
-        self.init_state = init_state
-        self.goal_state = goal_state
+        self.init_state = Node(init_state)
+        self.goal_state = Node(goal_state)
         self.actions = list()
+        self.max_depth = 0 # max depth reached by tree/graph search
+        self.nodes_expanded = 0 # number of nodes expanded
+        self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
 
     def solve(self):
+        start = time()
         #TODO
         # implement your search algorithm here
-        
+        self.time_taken = time() - start
         return ["LEFT", "RIGHT"] # sample output 
+
+    # returns Effective Branching Factor
+    def get_EFB(self):
+        return math.pow(self.nodes_expanded, 1/self.max_depth)
+
+    # returns number of nodes expanded by latest exeuted solve operation
+    def get_nodes_expanded(self):
+        return self.nodes_expanded
 
     # you may add more functions if you think is useful
 
@@ -66,10 +88,3 @@ if __name__ == "__main__":
     with open(sys.argv[2], 'a') as f:
         for answer in ans:
             f.write(answer+'\n')
-
-
-
-
-
-
-
