@@ -1,3 +1,5 @@
+#INFORMED SEARCH 3
+
 import os
 import sys
 import math
