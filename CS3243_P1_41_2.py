@@ -61,7 +61,7 @@ class Puzzle(object):
         self.size = len(init_state)
         self.init_state = Node(init_state)
         self.goal_state = Node(goal_state)
-        self.visited = set()
+        self.visited = dict()
         self.actions = list()
         self.max_depth = 0 # max depth reached by tree/graph search
         self.nodes_expanded = 0 # number of nodes expanded
@@ -84,15 +84,27 @@ class Puzzle(object):
 
         while frontier[0].get_heuristic_value() > 0:
             curr = heapq.heappop(frontier)
-            self.visited.add(self.tupify(curr.state))
+            self.nodes_expanded += 1;
+            # if self.nodes_expanded % 50000 == 0:
+            #     print self.nodes_expanded, curr.get_current_cost()
+            #     print curr.state
+            self.visited[self.tupify(curr.state)] = curr.get_current_cost()
 
             for i in self.generate_possibilities(curr):
                 i.set_current_cost(curr.get_current_cost() + 1)
                 i.set_heuristic_value(self.get_heuristic_value(i))
-                heapq.heappush(frontier, i)
+                key = self.tupify(i.state)
+                if key not in self.visited or i.get_current_cost() < self.visited[key]:
+                    heapq.heappush(frontier, i)
+                    self.visited[key] = i.get_current_cost()
 
             if len(frontier) == 0:
+<<<<<<< Updated upstream
                 return ["UNSOLVABLE"]
+=======
+                return ["IMPOSSIBLE"]
+        
+>>>>>>> Stashed changes
 
         backtrack = frontier[0]
         while backtrack != None:
@@ -101,7 +113,7 @@ class Puzzle(object):
 
         self.actions.reverse()
         self.time_taken = time() - start
-        print(self.time_taken)
+        print self.nodes_expanded, self.time_taken
         return self.actions
 
     # returns Effective Branching Factor
@@ -125,6 +137,8 @@ class Puzzle(object):
         for i in range(self.size):
             for j in range(self.size):
                 curr = node.state[i][j]
+                if curr == 0:
+                    continue
                 coord_in_goal = self.search_in_goal(curr);
                 count += (abs(coord_in_goal[0]-i) + abs(coord_in_goal[1]-j))
         return count
