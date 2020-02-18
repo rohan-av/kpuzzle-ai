@@ -1,4 +1,4 @@
-# INFORMED SEARCH 1
+# INFORMED SEARCH 1: Manhattan Distance
 
 import os
 import sys

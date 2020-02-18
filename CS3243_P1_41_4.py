@@ -1,4 +1,4 @@
-#INFORMED SEARCH 3
+#INFORMED SEARCH 3: NMax Swap
 
 import os
 import sys

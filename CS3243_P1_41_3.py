@@ -1,4 +1,4 @@
-#INFORMED SEARCH 2
+#INFORMED SEARCH 2: Manhattan Distance + Linear Conflict
 
 import os
 import sys
