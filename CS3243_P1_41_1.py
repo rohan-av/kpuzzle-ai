@@ -64,26 +64,20 @@ class Puzzle(object):
         frontier = []
         frontier.append(self.init_state);
 
-        find = False
-
         while True :
             curr =  frontier.pop(0)
             self.visited.add(self.tupify(curr.state))
+            if (curr.state == self.goal_state.state):
+                backtrack = curr;               
+                break
 
             for i in self.generate_possibilities(curr):
                 i.set_current_cost(curr.get_current_cost() + 1)                
                 frontier.append(i)
-                if (curr.state == self.goal_state.state):
-                    print("Found")
-                    find = True
-                    break
-            if find:
-                break
 
             if len(frontier) == 0:
                 return ["IMPOSSIBLE"]
 
-        backtrack = frontier[0]
         while backtrack != None:
             self.actions.append(backtrack.get_previous_action())
             backtrack = backtrack.get_previous_node()
