@@ -99,12 +99,7 @@ class Puzzle(object):
                     self.visited[key] = i.get_current_cost()
 
             if len(frontier) == 0:
-<<<<<<< Updated upstream
                 return ["UNSOLVABLE"]
-=======
-                return ["IMPOSSIBLE"]
-        
->>>>>>> Stashed changes
 
         backtrack = frontier[0]
         while backtrack != None:
