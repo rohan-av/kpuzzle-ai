@@ -18,6 +18,8 @@ class Node(object):
         self.depth = float('inf')
     
     def __lt__(self, other):
+        if (self.current_cost + self.heuristic_value) == (other.current_cost + other.heuristic_value):
+            return (self.current_cost > other.current_cost)
         return (self.current_cost + self.heuristic_value) < (other.current_cost + other.heuristic_value)
 
     def __eq__(self, other):
@@ -64,6 +66,7 @@ class Puzzle(object):
         self.visited = dict()
         self.actions = list()
         self.max_depth = 0 # max depth reached by tree/graph search
+        self.max_size = 0;
         self.nodes_expanded = 0 # number of nodes expanded
         self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
 
@@ -81,6 +84,7 @@ class Puzzle(object):
 
         frontier = []
         heapq.heappush(frontier, self.init_state)
+        self.max_size += 1
 
         while frontier[0].get_heuristic_value() > 0:
             curr = heapq.heappop(frontier)
@@ -88,15 +92,18 @@ class Puzzle(object):
             # if self.nodes_expanded % 50000 == 0:
             #     print self.nodes_expanded, curr.get_current_cost()
             #     print curr.state
-            self.visited[self.tupify(curr.state)] = curr.get_current_cost()
+            # self.visited[self.tupify(curr.state)] = curr.get_current_cost()
 
             for i in self.generate_possibilities(curr):
                 i.set_current_cost(curr.get_current_cost() + 1)
                 i.set_heuristic_value(self.get_heuristic_value(i))
                 key = self.tupify(i.state)
-                if key not in self.visited or i.get_current_cost() < self.visited[key]:
+                if key not in self.visited or i.get_current_cost() < self.visited[key]: #TODO: this always short circuits (???)
                     heapq.heappush(frontier, i)
                     self.visited[key] = i.get_current_cost()
+
+            if len(frontier) > self.max_size:
+                self.max_size = len(frontier)
 
             if len(frontier) == 0:
                 return ["IMPOSSIBLE"]
@@ -109,7 +116,7 @@ class Puzzle(object):
 
         self.actions.reverse()
         self.time_taken = time() - start
-        print self.nodes_expanded, self.time_taken
+        print self.nodes_expanded, self.max_size, self.time_taken
         return self.actions
 
     # returns Effective Branching Factor
@@ -119,8 +126,8 @@ class Puzzle(object):
     # returns number of nodes expanded by latest exeuted solve operation
     def get_nodes_expanded(self):
         return self.nodes_expanded
-
-    # calculates heuristic value for a given node (h1: manhattan distance)
+    
+    # calculates heuristic value for a given node (h2: manhattan distance + linear conflict)
     def get_heuristic_value(self, node):
         return self.get_Linear_Conflict(node) + self.get_Manhattan_Distance(node)
 
