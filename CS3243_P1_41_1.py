@@ -156,7 +156,6 @@ class Puzzle(object):
 
     # checks for whether the puzzle provided is solvable
     def check_for_solvability(self):
-        # puzzle is only solvable if number of inversions is even
         inversions = 0
         row_with_blank = None
         initial = []
