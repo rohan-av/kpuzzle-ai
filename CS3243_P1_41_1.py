@@ -53,19 +53,23 @@ class Puzzle(object):
         self.visited = set()
         self.actions = list()
         self.max_depth = 0 # max depth reached by tree/graph search
+        self.max_size = 0
         self.nodes_expanded = 0 # number of nodes expanded
         self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
 
     def solve(self):
         start = time()
-        #TODO
-        # implement your search algorithm here
+        if not self.check_for_solvability():
+            self.actions.append("IMPOSSIBLE")
+            print "IMPOSSIBLE"
+            return self.actions
 
         frontier = []
         frontier.append(self.init_state);
 
         while True :
             curr =  frontier.pop(0)
+            self.nodes_expanded += 1
             self.visited.add(self.tupify(curr.state))
             if (curr.state == self.goal_state.state):
                 backtrack = curr;               
@@ -74,9 +78,8 @@ class Puzzle(object):
             for i in self.generate_possibilities(curr):
                 i.set_current_cost(curr.get_current_cost() + 1)                
                 frontier.append(i)
-
-            if len(frontier) == 0:
-                return ["UNSOLVABLE"]
+            
+            self.max_size = len(frontier) if len(frontier) > self.max_size else self.max_size
 
         while backtrack != None:
             self.actions.append(backtrack.get_previous_action())
@@ -84,7 +87,10 @@ class Puzzle(object):
         
         self.actions.reverse()
         self.time_taken = time() - start
-        print(self.time_taken)
+        print "Nodes Expanded:     ", self.nodes_expanded
+        print "Max Frontier Size:  ", self.max_size
+        print "Time Taken:         ", self.time_taken
+        print "Length of Solution: ", (len(self.actions) - 1)
         return self.actions # sample output 
 
     def generate_possibilities(self, node):
@@ -147,6 +153,32 @@ class Puzzle(object):
                 nodes.append(temp_node)
 
         return nodes
+
+    # checks for whether the puzzle provided is solvable
+    def check_for_solvability(self):
+        # puzzle is only solvable if number of inversions is even
+        inversions = 0
+        row_with_blank = None
+        initial = []
+        for row in range(self.size):
+            for e in self.init_state.state[row]:
+                if e == 0:
+                    row_with_blank = row
+                    continue
+                initial.append(e)
+        for i in range(len(initial)):
+            curr = initial[i]
+            for j in range(i, len(initial)):
+                if initial[j] < initial[i]:
+                    inversions += 1
+        print "No. of Inversions:  ", inversions
+        if (self.size % 2):
+            return (inversions % 2 == 0)
+        else:
+            if (row_with_blank % 2):
+                return (inversions % 2 == 0)
+            else:
+                return (inversions % 2 == 1)
 
     # returns Effective Branching Factor
     def get_EFB(self):

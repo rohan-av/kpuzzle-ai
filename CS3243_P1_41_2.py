@@ -71,15 +71,16 @@ class Puzzle(object):
         self.visited = dict()
         self.actions = list()
         self.max_depth = 0 # max depth reached by tree/graph search
-        self.max_size = 0;
+        self.max_size = 0
         self.nodes_expanded = 0 # number of nodes expanded
         self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
 
     def solve(self):
         start = time()
-        #TODO
-        # implement your search algorithm here
-
+        if not self.check_for_solvability():
+            self.actions.append("IMPOSSIBLE")
+            print "IMPOSSIBLE"
+            return self.actions
         '''
         A* with h1: manhattan distance
         '''
@@ -112,10 +113,6 @@ class Puzzle(object):
             if len(frontier) > self.max_size:
                 self.max_size = len(frontier)
 
-            if len(frontier) == 0:
-                return ["IMPOSSIBLE"]
-        
-
         backtrack = frontier[0]
         while backtrack != None:
             self.actions.append(backtrack.get_previous_action())
@@ -124,7 +121,7 @@ class Puzzle(object):
         self.actions.reverse()
         self.time_taken = time() - start
         print "Nodes Expanded:     ", self.nodes_expanded
-        print "Max Frontier size:  ", self.max_size
+        print "Max Frontier Size:  ", self.max_size
         print "Time Taken:         ", self.time_taken
         print "Length of Solution: ", (len(self.actions) - 1)
         return self.actions
@@ -137,10 +134,36 @@ class Puzzle(object):
     def get_nodes_expanded(self):
         return self.nodes_expanded
 
+    # checks for whether the puzzle provided is solvable
+    def check_for_solvability(self):
+        # puzzle is only solvable if number of inversions is even
+        inversions = 0
+        row_with_blank = None
+        initial = []
+        for row in range(self.size):
+            for e in self.init_state.state[row]:
+                if e == 0:
+                    row_with_blank = row
+                    continue
+                initial.append(e)
+        for i in range(len(initial)):
+            curr = initial[i]
+            for j in range(i, len(initial)):
+                if initial[j] < initial[i]:
+                    inversions += 1
+        print "No. of Inversions:  ", inversions
+        if (self.size % 2):
+            return (inversions % 2 == 0)
+        else:
+            if (row_with_blank % 2):
+                return (inversions % 2 == 0)
+            else:
+                return (inversions % 2 == 1)
+
     # calculates heuristic value for a given node (h1: manhattan distance)
     def get_heuristic_value(self, node):
+        ## h0: Hamming Distance (kept for posterity)
         # count = 0
-
         # for i in range(self.size):
         #     for j in range(self.size):
         #         if node.state[i][j] != self.goal_state.state[i][j]:
