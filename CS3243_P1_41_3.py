@@ -13,12 +13,14 @@ class Node(object):
         self.heuristic_value = float('inf')
         self.previous_action = "START"
         self.previous_node = None
-        
+        self.id = 0
         # stats
         self.depth = float('inf')
     
     def __lt__(self, other):
         if (self.current_cost + self.heuristic_value) == (other.current_cost + other.heuristic_value):
+            if (self.current_cost == other.current_cost):
+                return (self.id > other.id)
             return (self.current_cost > other.current_cost)
         return (self.current_cost + self.heuristic_value) < (other.current_cost + other.heuristic_value)
 
@@ -56,6 +58,9 @@ class Node(object):
     
     def get_previous_node(self):
         return self.previous_node
+    
+    def set_id(self, next_id):
+        self.id = next_id
 
 class Puzzle(object):
     def __init__(self, init_state, goal_state):
@@ -83,25 +88,27 @@ class Puzzle(object):
         self.init_state.set_heuristic_value(self.get_heuristic_value(self.init_state))
 
         frontier = []
+        contains = {} # hash table to keep track of the minimum cost to each node
+        next_id = 0;
         heapq.heappush(frontier, self.init_state)
+        self.visited[self.tupify(self.init_state.state)] = 0;
         self.max_size += 1
 
         while frontier[0].get_heuristic_value() > 0:
             curr = heapq.heappop(frontier)
             self.nodes_expanded += 1;
-            # if self.nodes_expanded % 50000 == 0:
-            #     print self.nodes_expanded, curr.get_current_cost()
-            #     print curr.state
-            # self.visited[self.tupify(curr.state)] = curr.get_current_cost()
+            self.visited[self.tupify(curr.state)] = curr.get_current_cost()
 
-            for i in self.generate_possibilities(curr):
+            for i in self.generate_possibilities(curr): # generate possibilities will only return nodes that have not yet been visited
+                next_id += 1;
                 i.set_current_cost(curr.get_current_cost() + 1)
                 i.set_heuristic_value(self.get_heuristic_value(i))
+                i.set_id(next_id);
                 key = self.tupify(i.state)
-                if key not in self.visited or i.get_current_cost() < self.visited[key]: #TODO: this always short circuits (???)
+                if key not in contains:
                     heapq.heappush(frontier, i)
-                    self.visited[key] = i.get_current_cost()
-
+                    contains[key] = i.get_current_cost()
+            
             if len(frontier) > self.max_size:
                 self.max_size = len(frontier)
 
@@ -116,7 +123,10 @@ class Puzzle(object):
 
         self.actions.reverse()
         self.time_taken = time() - start
-        print self.nodes_expanded, self.max_size, self.time_taken
+        print "Nodes Expanded:     ", self.nodes_expanded
+        print "Max Frontier size:  ", self.max_size
+        print "Time Taken:         ", self.time_taken
+        print "Length of Solution: ", (len(self.actions) - 1)
         return self.actions
 
     # returns Effective Branching Factor
