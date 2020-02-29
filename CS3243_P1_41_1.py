@@ -108,7 +108,7 @@ class Puzzle(object):
                     blank_y = y
                     break
         
-        # move blank right
+        # move blank left => move tile right
         if blank_x > 0:
             temp = self.twodimensional_copy(node.state)
             temp[blank_y][blank_x] = temp[blank_y][blank_x - 1]
@@ -116,10 +116,10 @@ class Puzzle(object):
             if self.tupify(temp) not in self.visited:
                 temp_node = Node(temp)
                 temp_node.set_previous_node(node)
-                temp_node.set_previous_action("RIGHT")
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " RIGHT")
                 nodes.append(temp_node)
         
-        # move blank left
+        # move blank right => move tile left
         if blank_x < self.size - 1:
             temp = self.twodimensional_copy(node.state)
             temp[blank_y][blank_x] = temp[blank_y][blank_x + 1]
@@ -127,21 +127,10 @@ class Puzzle(object):
             if self.tupify(temp) not in self.visited:
                 temp_node = Node(temp)
                 temp_node.set_previous_node(node)
-                temp_node.set_previous_action("LEFT")
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " LEFT")
                 nodes.append(temp_node)
-        
-        # move blank down
-        if blank_y > 0:
-            temp = self.twodimensional_copy(node.state)
-            temp[blank_y][blank_x] = temp[blank_y - 1][blank_x]
-            temp[blank_y - 1][blank_x] = 0
-            if self.tupify(temp) not in self.visited:
-                temp_node = Node(temp)
-                temp_node.set_previous_node(node)
-                temp_node.set_previous_action("DOWN")
-                nodes.append(temp_node)
-        
-        # move blank up
+
+        # move blank down => move tile up
         if blank_y < self.size - 1:
             temp = self.twodimensional_copy(node.state)
             temp[blank_y][blank_x] = temp[blank_y + 1][blank_x]
@@ -149,7 +138,18 @@ class Puzzle(object):
             if self.tupify(temp) not in self.visited:
                 temp_node = Node(temp)
                 temp_node.set_previous_node(node)
-                temp_node.set_previous_action("UP")
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " UP")
+                nodes.append(temp_node)
+        
+        # move blank up => move tile down
+        if blank_y > 0:
+            temp = self.twodimensional_copy(node.state)
+            temp[blank_y][blank_x] = temp[blank_y - 1][blank_x]
+            temp[blank_y - 1][blank_x] = 0
+            if self.tupify(temp) not in self.visited:
+                temp_node = Node(temp)
+                temp_node.set_previous_node(node)
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " DOWN")
                 nodes.append(temp_node)
 
         return nodes
