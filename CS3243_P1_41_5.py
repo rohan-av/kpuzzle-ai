@@ -1,53 +1,62 @@
-# EXPERIMENT
-
 import os
 import sys
 import math
-from time import time # assumes Unix-based system; switch to clock if on Windows
+from fractions import Fraction  
 
-class Node(object):
-    def __init__(self, orientation):
-        self.state = orientation # a list of lists corresponding to the orientation of the tiles
-        self.depth = 0
+import CS3243_P1_41_1 as uninformed
+import CS3243_P1_41_2 as informedHOne # Manhattan Distance
+import CS3243_P1_41_3 as informedHTwo # Manhattan Distance + Linear Conflict
+import CS3243_P1_41_4 as informedHThree # Euclidean Distance
+
+class PuzzleTester(object):
+    def __init__(self):
+        self.uninformed = uninformed
+        self.informedHOne = informedHOne
+        self.informedHTwo = informedHTwo
+        self.informedHThree = informedHThree
+
+    def testUninformed(self, initial, goal_state):
+        currentAlgo = self.uninformed.Puzzle(initial, goal_state)
+        printIntro(currentAlgo, initial)
+        currentAlgo.solve()
+        generateStatistics(currentAlgo)
     
-    # compare function to check whether two States have the same orientation of tiles
-    def compare(self, other):
-        return self.state == other.state
+    def testInformed(self, initial, goal_state):
+        for i in [self.informedHOne, self.informedHTwo, self.informedHThree]:
+            currentAlgo = i.Puzzle(initial, goal_state)
+            printIntro(currentAlgo, initial)
+            currentAlgo.solve()
+            generateStatistics(currentAlgo)
 
-class Puzzle(object):
-    def __init__(self, init_state, goal_state):
-        # you may add more attributes if you think is useful
-        self.init_state = Node(init_state)
-        self.goal_state = Node(goal_state)
-        self.actions = list()
-        self.max_depth = 0 # max depth reached by tree/graph search
-        self.nodes_expanded = 0 # number of nodes expanded
-        self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
+def printIntro(puzzle, initial):
+    print "---------------------"
+    print "Heuristic:", puzzle.name
+    print ""
 
-    def solve(self):
-        start = time()
-        #TODO
-        # implement your search algorithm here
-        self.time_taken = time() - start
-        return ["LEFT", "RIGHT"] # sample output 
+    puzzle_size = len(initial)
+    for i in initial:
+        line = " "
+        for j in i:
+            line += (str(j) + (" " if j > 9 else "  "))
+        print "|", line, "|" 
+    print ""
 
-    # returns Effective Branching Factor
-    def get_EFB(self):
-        return math.pow(self.nodes_expanded, 1/self.max_depth)
-
-    # returns number of nodes expanded by latest exeuted solve operation
-    def get_nodes_expanded(self):
-        return self.nodes_expanded
-
-    # you may add more functions if you think is useful
+def generateStatistics(puzzle):
+    print "No. of Inversions:", puzzle.inversions
+    print "Nodes Expanded:", puzzle.nodes_expanded
+    print "Max Frontier Size:", puzzle.max_size
+    print "Time Taken:", puzzle.time_taken
+    print "Length of Solution:", (len(puzzle.actions) - 1)
+    print "Effective Branching Factor:", math.pow(puzzle.nodes_expanded, Fraction(1, (len(puzzle.actions) - 1)))
+    print ""
 
 if __name__ == "__main__":
-    # do NOT modify below
-
     # argv[0] represents the name of the file that is being executed
     # argv[1] represents name of input file
     # argv[2] represents name of destination output file
-    if len(sys.argv) != 3:
+    # argv[3] represents if uninformed search should be included
+
+    if len(sys.argv) != 3 and len(sys.argv) != 4:
         raise ValueError("Wrong number of arguments!")
 
     try:
@@ -84,9 +93,8 @@ if __name__ == "__main__":
         goal_state[(i-1)//n][(i-1)%n] = i
     goal_state[n - 1][n - 1] = 0
 
-    puzzle = Puzzle(init_state, goal_state)
-    ans = puzzle.solve()
+    puzzleTester = PuzzleTester()
 
-    with open(sys.argv[2], 'a') as f:
-        for answer in ans:
-            f.write(answer+'\n')
+    if len(sys.argv) == 4:
+        puzzleTester.testUninformed(init_state, goal_state)
+    puzzleTester.testInformed(init_state, goal_state)

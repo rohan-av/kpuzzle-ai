@@ -65,11 +65,13 @@ class Node(object):
 class Puzzle(object):
     def __init__(self, init_state, goal_state):
         # you may add more attributes if you think is useful
+        self.name = "Euclidean Distance"
         self.size = len(init_state)
         self.init_state = Node(init_state)
         self.goal_state = Node(goal_state)
         self.visited = dict()
         self.actions = list()
+        self.inversions = 0
         self.max_depth = 0 # max depth reached by tree/graph search
         self.max_size = 0
         self.nodes_expanded = 0 # number of nodes expanded
@@ -89,8 +91,8 @@ class Puzzle(object):
     def solve(self):
         start = time()
         if not self.check_for_solvability():
-            self.actions.append("IMPOSSIBLE")
-            print "IMPOSSIBLE"
+            self.actions.append("UNSOLVABLE")
+            print "UNSOLVABLE"
             return self.actions
         '''
         A* with h3: N-Max Swap
@@ -133,10 +135,6 @@ class Puzzle(object):
 
         self.actions.reverse()
         self.time_taken = time() - start
-        print "Nodes Expanded:     ", self.nodes_expanded
-        print "Max Frontier Size:  ", self.max_size
-        print "Time Taken:         ", self.time_taken
-        print "Length of Solution: ", (len(self.actions) - 1)
         return self.actions
 
     # returns Effective Branching Factor
@@ -163,7 +161,7 @@ class Puzzle(object):
             for j in range(i, len(initial)):
                 if initial[j] < initial[i]:
                     inversions += 1
-        print "No. of Inversions:  ", inversions
+        self.inversions = inversions
         if (self.size % 2):
             return (inversions % 2 == 0)
         else:

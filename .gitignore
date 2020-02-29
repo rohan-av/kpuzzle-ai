@@ -1,3 +1,4 @@
 /.vscode
-output.txt
+output*.txt*
 .DS_Store
+*.pyc
