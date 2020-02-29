@@ -1,4 +1,4 @@
-# INFORMED SEARCH 3: Euclidean Distance
+# INFORMED SEARCH 1: N-Max Swap
 
 import os
 import sys
@@ -68,33 +68,13 @@ class Puzzle(object):
         self.size = len(init_state)
         self.init_state = Node(init_state)
         self.goal_state = Node(goal_state)
+        self.state_dict = []
         self.visited = dict()
         self.actions = list()
         self.max_depth = 0 # max depth reached by tree/graph search
         self.max_size = 0
         self.nodes_expanded = 0 # number of nodes expanded
         self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
-        self.goal_dict = dict()
-        self.math_dict = []
-        count = 1
-        for i in range(self.size):
-            for j in range(self.size):
-                if (count != self.size**2):
-                    self.goal_dict[count] = (i,j)
-
-                    count += 1
-                else :
-                    self.goal_dict[0] = (i,j)
-
-        count = 1
-        self.math_dict = [[0 for i in range(self.size)] for j in range(self.size)]
-
-        for i in range(self.size):
-            for j in range(self.size):
-                # print(x,y)
-                # if n not in self.math_dict:
-                self.math_dict[i][j] = int(math.ceil(math.hypot(i, j)))
-
 
     def solve(self):
         start = time()
@@ -192,15 +172,49 @@ class Puzzle(object):
         #             count += 1
         # return count
        
-        h = 0
+        count = 0
+        search = 1
+        current_state = self.twodimensional_copy(node.state);
+
+        state_dict = {}
+
         for i in range(self.size):
             for j in range(self.size):
-                if (node.state[i][j] != 0):
-                    (goal_x, goal_y) = self.goal_dict[(node.state[i][j])]
-                    x = abs(i - goal_x)
-                    y = abs(j - goal_y)
-                    h +=  self.math_dict[x][y]
-        return h
+                state_dict[node.state[i][j]] = (i,j) 
+
+        for i in range(self.size):
+            for j in range(self.size):
+                coord_zero = state_dict[0]
+                if (current_state == self.goal_state.state):
+                    return count
+                
+                if (coord_zero == (self.size-1,self.size-1) and current_state != self.goal_state.state):
+                    coord_next_misplaced = self.find_next_misplaced_tile(current_state)
+                    n = current_state[coord_next_misplaced[0]][coord_next_misplaced[1]]
+                    coord_n = state_dict[n]
+                    current_state[coord_zero[0]][coord_zero[1]] = n
+                    state_dict[n] = coord_zero
+                    current_state[coord_n[0]][coord_n[1]] = 0
+                    state_dict[0] = coord_n
+                    count += 1
+                    continue
+
+                n = self.goal_state.state[coord_zero[0]][coord_zero[1]]
+                coord_n = state_dict[n]
+                current_state[coord_zero[0]][coord_zero[1]] = n
+                state_dict[n] = coord_zero
+                current_state[coord_n[0]][coord_n[1]] = 0
+                state_dict[0] = coord_n
+                count += 1
+                
+        return count
+
+    def find_next_misplaced_tile(self, state):
+        for k in range(self.size):
+            for l in range(self.size):
+                if (state[k][l] != self.goal_state.state[k][l]):
+                    return (k,l)
+        return (-1, -1)
 
     def generate_possibilities(self, node):
         blank_x = -1

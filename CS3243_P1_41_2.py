@@ -74,6 +74,17 @@ class Puzzle(object):
         self.max_size = 0
         self.nodes_expanded = 0 # number of nodes expanded
         self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
+        self.goal_dict = dict()
+        count = 1
+        for i in range(self.size):
+            for j in range(self.size):
+                if (count != self.size**2):
+                    self.goal_dict[count] = (i,j)
+
+                    count += 1
+                else :
+                    self.goal_dict[0] = (i,j)
+                    
 
     def solve(self):
         start = time()
@@ -179,12 +190,7 @@ class Puzzle(object):
         return count
 
     def search_in_goal(self, query):
-        goal = self.goal_state.state
-        for i in range(self.size):
-            for j in range(self.size):
-                if goal[i][j] == query:
-                    return (i, j);
-        return (-1, -1)
+        return self.goal_dict[query]
 
     def generate_possibilities(self, node):
         blank_x = -1
