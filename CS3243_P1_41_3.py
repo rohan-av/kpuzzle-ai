@@ -164,38 +164,119 @@ class Puzzle(object):
     def get_heuristic_value(self, node):
         return self.get_Linear_Conflict(node) + self.get_Manhattan_Distance(node)
 
+    def get_horizontal_conflict(self, node, coord):
+        row = coord[0]
+        col = coord[1]
+        conflicts = []
+        curr = node.state[row][col]
+        if curr == 0:
+            return conflicts
+        coord_in_goal = self.search_in_goal(curr)
+        if row == coord_in_goal[0]:
+            for c in range(self.size):
+                tile = node.state[row][c]
+                if tile != curr and tile != 0:
+                    tile_coord_in_goal = self.search_in_goal(tile)
+                    if tile_coord_in_goal[0] == row: #same row as goal; proceed to check for conflict
+                        if (tile_coord_in_goal[1]-coord_in_goal[1])*(c-col) < 0:
+                            conflicts.append(c) # adds tile to list of conflicting tiles
+                            # conflicts.add(tuple(sorted((tile, curr))))
+        return conflicts
+
+    def get_vertical_conflict(self, node, coord):
+        row = coord[0]
+        col = coord[1]
+        conflicts = []
+        curr = node.state[row][col]
+        if curr == 0:
+            return conflicts
+        coord_in_goal = self.search_in_goal(curr)
+        if col == coord_in_goal[1]:
+            for c in range(self.size):
+                tile = node.state[c][col]
+                if tile != curr and tile != 0:
+                    tile_coord_in_goal = self.search_in_goal(tile)
+                    if tile_coord_in_goal[1] == col: #same row as goal; proceed to check for conflict
+                        if (tile_coord_in_goal[0]-coord_in_goal[0])*(c-row) < 0:
+                            conflicts.append(c) # adds tile to list of conflicting tiles
+                            # conflicts.add(tuple(sorted((tile, curr))))
+        return conflicts
+        
+    def return_max_length_from_dct(self, dct):
+        max_length = 0
+        result = -1
+        for key in dct:
+            if len(dct[key]) > max_length:
+                max_length = len(dct[key])
+                result = key
+        return result
+
+
     # two tiles are in linear conflict if they are in the same row or column, their goal positions
     # are in the same row or column, and orientation of one tile with respect to another tile is swapped
     def get_Linear_Conflict(self, node):
-        conflicts = set();
+        overall_count = 0
         for i in range(self.size):
+            count = 0
+            conflicts = {}
             for j in range(self.size):
-                curr = node.state[i][j]
-                if curr == 0:
-                    continue
-                coord_in_goal = self.search_in_goal(curr)
-                if i == coord_in_goal[0]: #same row as goal
-                    others = [] # temp list to store other tiles in row that share the same goal row
-                    for c in range(self.size):
-                        tile = node.state[i][c]
-                        if tile != curr and tile != 0 and (tuple(sorted((tile, curr))) not in conflicts):
-                            tile_coord_in_goal = self.search_in_goal(tile)
-                            if tile_coord_in_goal[0] == i: #same row as goal; proceed to check for conflict
-                                if (tile_coord_in_goal[1]-coord_in_goal[1])*(c-j) < 0:
-                                    # multiplication of the two differences is only negative if there is conflict
-                                    conflicts.add(tuple(sorted((tile, curr))))
-                if j == coord_in_goal[1]:
-                    others = [] # temp list to store other tiles in col that share the same goal col
-                    for r in range(self.size):
-                        tile = node.state[r][j]
-                        if tile != curr and tile != 0 and (tuple(sorted((tile, curr))) not in conflicts):
-                            tile_coord_in_goal = self.search_in_goal(tile)
-                            if tile_coord_in_goal[1] == j: #same col as goal; proceed to check for conflict
-                                if (tile_coord_in_goal[0]-coord_in_goal[0])*(r-i) < 0:
-                                    # multiplication of the two differences is only negative if there is conflict
-                                    conflicts.add(tuple(sorted((tile, curr))))
-        #print conflicts
-        return len(conflicts)*2;
+                conflicts[(j,)] = self.get_horizontal_conflict(node, (i, j))
+            while len(filter(lambda x: x == 0, [len(conflicts[key]) for key in conflicts])) != len(conflicts):
+                tile_with_most_conflicts = self.return_max_length_from_dct(conflicts)
+                for e in conflicts[tile_with_most_conflicts]:
+                    conflicts[(e,)].remove(tile_with_most_conflicts[0])
+                conflicts[tile_with_most_conflicts] = [];
+                count += 1
+            overall_count += count
+        for j in range(self.size):
+            count = 0
+            conflicts = {}
+            for i in range(self.size):
+                conflicts[(i,)] = self.get_vertical_conflict(node, (i, j))
+                # print len(filter(lambda x: x == 0, [len(conflicts[key]) for key in conflicts]))
+            while len(filter(lambda x: x == 0, [len(conflicts[key]) for key in conflicts])) != len(conflicts):
+                tile_with_most_conflicts = self.return_max_length_from_dct(conflicts)
+                # print(conflicts)
+                # print(tile_with_most_conflicts)
+                for e in conflicts[tile_with_most_conflicts]:
+                    conflicts[(e,)].remove(tile_with_most_conflicts[0])
+                conflicts[tile_with_most_conflicts] = [];
+                count += 1
+            overall_count += count
+        return overall_count*2        
+                
+
+        # conflicts = set();
+        # for i in range(self.size):
+        #     for j in range(self.size):
+        #         curr = node.state[i][j]
+        #         if curr == 0:
+        #             continue
+        #         coord_in_goal = self.search_in_goal(curr)
+        #         if i == coord_in_goal[0]: #same row as goal
+        #             others = [] # temp list to store other tiles in row that share the same goal row
+        #             for c in range(self.size):
+        #                 tile = node.state[i][c]
+        #                 if tile != curr and tile != 0 and (tuple(sorted((tile, curr))) not in conflicts):
+        #                     tile_coord_in_goal = self.search_in_goal(tile)
+        #                     if tile_coord_in_goal[0] == i: #same row as goal; proceed to check for conflict
+        #                         if (tile_coord_in_goal[1]-coord_in_goal[1])*(c-j) < 0:
+        #                             # multiplication of the two differences is only negative if there is conflict
+        #                             conflicts.add(tuple(sorted((tile, curr))))
+        #                             break # break out of loop, as solving this conflict might fix other conflicts in the same row
+        #         if j == coord_in_goal[1]:
+        #             others = [] # temp list to store other tiles in col that share the same goal col
+        #             for r in range(self.size):
+        #                 tile = node.state[r][j]
+        #                 if tile != curr and tile != 0 and (tuple(sorted((tile, curr))) not in conflicts):
+        #                     tile_coord_in_goal = self.search_in_goal(tile)
+        #                     if tile_coord_in_goal[1] == j: #same col as goal; proceed to check for conflict
+        #                         if (tile_coord_in_goal[0]-coord_in_goal[0])*(r-i) < 0:
+        #                             # multiplication of the two differences is only negative if there is conflict
+        #                             conflicts.add(tuple(sorted((tile, curr))))
+        #                             break # break out of loop, as solving this conflict might fix other conflicts in the same col
+        # #print conflicts
+        # return len(conflicts)*2;
 
     def get_Manhattan_Distance(self, node):
         count = 0
