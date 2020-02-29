@@ -117,7 +117,7 @@ class Puzzle(object):
                 i.set_heuristic_value(self.get_heuristic_value(i))
                 i.set_id(next_id);
                 key = self.tupify(i.state)
-                if key not in contains:
+                if key not in contains or contains[key] > i.get_current_cost():
                     heapq.heappush(frontier, i)
                     contains[key] = i.get_current_cost()
             
