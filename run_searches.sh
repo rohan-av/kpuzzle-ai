@@ -25,4 +25,7 @@ python CS3243_P1_41_2.py public_tests_p1/n_equals_${size}/input_${input}.txt out
 echo -e "\nInformed Search (Manhattan + LC):"
 python CS3243_P1_41_3.py public_tests_p1/n_equals_${size}/input_${input}.txt output3.txt
 
+echo -e "\nEuclidean Distance:"
+python CS3243_P1_41_4.py public_tests_p1/n_equals_${size}/input_${input}.txt output4.txt
+
 # to be updated with the final heuristic

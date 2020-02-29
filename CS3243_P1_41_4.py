@@ -74,17 +74,7 @@ class Puzzle(object):
         self.max_size = 0
         self.nodes_expanded = 0 # number of nodes expanded
         self.time_taken = 0 # time taken for the latest executed solve operation (in seconds)
-        self.goal_dict = dict()
         self.math_dict = []
-        count = 1
-        for i in range(self.size):
-            for j in range(self.size):
-                if (count != self.size**2):
-                    self.goal_dict[count] = (i,j)
-
-                    count += 1
-                else :
-                    self.goal_dict[0] = (i,j)
 
         count = 1
         self.math_dict = [[0 for i in range(self.size)] for j in range(self.size)]
@@ -195,12 +185,16 @@ class Puzzle(object):
         h = 0
         for i in range(self.size):
             for j in range(self.size):
-                if (node.state[i][j] != 0):
-                    (goal_x, goal_y) = self.goal_dict[(node.state[i][j])]
+                curr = node.state[i][j]
+                if (curr != 0):
+                    (goal_x, goal_y) = self.search_in_goal(curr)
                     x = abs(i - goal_x)
                     y = abs(j - goal_y)
                     h +=  self.math_dict[x][y]
         return h
+
+    def search_in_goal(self, query):
+        return ((query - 1) // self.size, (query - 1) % self.size)
 
     def generate_possibilities(self, node):
         blank_x = -1
@@ -217,7 +211,7 @@ class Puzzle(object):
                     blank_y = y
                     break
         
-        # move blank left
+        # move blank left => move tile right
         if blank_x > 0:
             temp = self.twodimensional_copy(node.state)
             temp[blank_y][blank_x] = temp[blank_y][blank_x - 1]
@@ -225,10 +219,10 @@ class Puzzle(object):
             if self.tupify(temp) not in self.visited:
                 temp_node = Node(temp)
                 temp_node.set_previous_node(node)
-                temp_node.set_previous_action("LEFT")
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " RIGHT")
                 nodes.append(temp_node)
         
-        # move blank right
+        # move blank right => move tile left
         if blank_x < self.size - 1:
             temp = self.twodimensional_copy(node.state)
             temp[blank_y][blank_x] = temp[blank_y][blank_x + 1]
@@ -236,21 +230,10 @@ class Puzzle(object):
             if self.tupify(temp) not in self.visited:
                 temp_node = Node(temp)
                 temp_node.set_previous_node(node)
-                temp_node.set_previous_action("RIGHT")
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " LEFT")
                 nodes.append(temp_node)
-        
-        # move blank up
-        if blank_y > 0:
-            temp = self.twodimensional_copy(node.state)
-            temp[blank_y][blank_x] = temp[blank_y - 1][blank_x]
-            temp[blank_y - 1][blank_x] = 0
-            if self.tupify(temp) not in self.visited:
-                temp_node = Node(temp)
-                temp_node.set_previous_node(node)
-                temp_node.set_previous_action("UP")
-                nodes.append(temp_node)
-        
-        # move blank down
+
+        # move blank down => move tile up
         if blank_y < self.size - 1:
             temp = self.twodimensional_copy(node.state)
             temp[blank_y][blank_x] = temp[blank_y + 1][blank_x]
@@ -258,7 +241,18 @@ class Puzzle(object):
             if self.tupify(temp) not in self.visited:
                 temp_node = Node(temp)
                 temp_node.set_previous_node(node)
-                temp_node.set_previous_action("DOWN")
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " UP")
+                nodes.append(temp_node)
+        
+        # move blank up => move tile down
+        if blank_y > 0:
+            temp = self.twodimensional_copy(node.state)
+            temp[blank_y][blank_x] = temp[blank_y - 1][blank_x]
+            temp[blank_y - 1][blank_x] = 0
+            if self.tupify(temp) not in self.visited:
+                temp_node = Node(temp)
+                temp_node.set_previous_node(node)
+                temp_node.set_previous_action(str(temp[blank_y][blank_x]) + " DOWN")
                 nodes.append(temp_node)
 
         return nodes
