@@ -31,8 +31,7 @@ class PuzzleTester(object):
     def test_three(self):
         cases = [
             [[4, 1, 0], [7, 5, 3], [8, 2, 6]],
-            [[3, 0, 2], [1, 4, 5], [8, 7, 6]], 
-            [[8, 6, 7], [2, 5, 4], [3, 0, 1]]
+            [[3, 0, 2], [1, 4, 5], [8, 7, 6]]
         ]
     #self.uninformed, self.informedHOne, self.informedHTwo, 
         for j in cases:
