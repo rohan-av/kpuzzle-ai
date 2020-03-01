@@ -28,6 +28,20 @@ class PuzzleTester(object):
             currentAlgo.solve()
             generateStatistics(currentAlgo)
 
+    def test_three(self):
+        cases = [
+            [[4, 1, 0], [7, 5, 3], [8, 2, 6]],
+            [[3, 0, 2], [1, 4, 5], [8, 7, 6]], 
+            [[8, 6, 7], [2, 5, 4], [3, 0, 1]]
+        ]
+    #self.uninformed, self.informedHOne, self.informedHTwo, 
+        for i in [self.informedHThree]:
+            for j in cases:
+                currentAlgo = i.Puzzle(j, goal_state)
+                printIntro(currentAlgo, j)
+                currentAlgo.solve()
+                generateStatistics(currentAlgo)
+
 def printIntro(puzzle, initial):
     print "---------------------"
     print "Heuristic:", puzzle.name
@@ -47,7 +61,8 @@ def generateStatistics(puzzle):
     print "Max Frontier Size:", puzzle.max_size
     print "Time Taken:", puzzle.time_taken
     print "Length of Solution:", (len(puzzle.actions) - 1)
-    print "Effective Branching Factor:", math.pow(puzzle.nodes_expanded, Fraction(1, (len(puzzle.actions) - 1)))
+    print "Effective Branching Factor:", math.pow(puzzle.nodes_expanded, Fraction(1, (len(puzzle.actions) - 1))) if (len(puzzle.actions) - 1) > 0 else "undef"
+    print "Input difficulty:", float(len(puzzle.actions) - 1) / float(205 if puzzle.size == 5 else (80 if puzzle.size == 4 else 31))
     print ""
 
 if __name__ == "__main__":
@@ -94,7 +109,10 @@ if __name__ == "__main__":
     goal_state[n - 1][n - 1] = 0
 
     puzzleTester = PuzzleTester()
-
+    #puzzleTester.test_three()
+    
+    
     if len(sys.argv) == 4:
         puzzleTester.testUninformed(init_state, goal_state)
     puzzleTester.testInformed(init_state, goal_state)
+    
