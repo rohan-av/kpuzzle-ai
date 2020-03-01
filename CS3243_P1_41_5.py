@@ -35,8 +35,8 @@ class PuzzleTester(object):
             [[8, 6, 7], [2, 5, 4], [3, 0, 1]]
         ]
     #self.uninformed, self.informedHOne, self.informedHTwo, 
-        for i in [self.informedHThree]:
-            for j in cases:
+        for j in cases:
+            for i in [self.uninformed, self.informedHOne, self.informedHTwo, self.informedHThree]:
                 currentAlgo = i.Puzzle(j, goal_state)
                 printIntro(currentAlgo, j)
                 currentAlgo.solve()
@@ -109,10 +109,13 @@ if __name__ == "__main__":
     goal_state[n - 1][n - 1] = 0
 
     puzzleTester = PuzzleTester()
-    #puzzleTester.test_three()
-    
-    
+
     if len(sys.argv) == 4:
-        puzzleTester.testUninformed(init_state, goal_state)
+        if sys.argv[3] == '2':
+            puzzleTester.test_three()
+            quit()
+        else:
+            puzzleTester.testUninformed(init_state, goal_state)
+
     puzzleTester.testInformed(init_state, goal_state)
     
